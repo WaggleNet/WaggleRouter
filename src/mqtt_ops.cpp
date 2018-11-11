@@ -22,6 +22,7 @@ boolean process_connection() {
 }
 
 void mqtt_init() {
+    // TODO: Query IAM if MQI token unparsed
     mqtt_broker_address = param::get_mqtt_address();
     mqtt_username = param::get_mqtt_username();
     mqtt_password = param::get_mqtt_password();

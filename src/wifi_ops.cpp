@@ -3,26 +3,17 @@
 ESP8266WebServer server(80);
 WiFiClient wclient;
 
-const String ssid_str = String("HoneyRouter_") + String(ESP.getChipId(), HEX);
+const String ssid_str = String("WaggleRouter_") + String(ESP.getChipId(), HEX);
 const char* ssid = ssid_str.c_str();
-#define password "12345678"
 
-void mode_ap_begin(boolean persist = false) {
-	if (persist) {
-		EEPROM.write(EE_WIFI_MODE, WIFI_MODE_AP);
-		EEPROM.commit();
-	}
+void mode_ap_begin() {
 	WiFi.mode(WIFI_AP);
-	WiFi.softAP(ssid, password);
+	WiFi.softAP(ssid, param::get_ap_password().c_str());
 	// Finally, print everything out...
 	print_wifi_info();
 }
 
-void mode_sta_begin(boolean persist = false) {
-	if (persist) {
-		EEPROM.write(EE_WIFI_MODE, WIFI_MODE_STA);
-		EEPROM.commit();
-	}
+void mode_sta_begin() {
 	WiFi.mode(WIFI_STA);
 	auto sta_ssid = param::get_wifi_ssid();
 	auto sta_pwd = param::get_wifi_password();
@@ -42,34 +33,31 @@ void route_root() {
 		server.send(404, "text/plain", "Page not found.");
 }
 
+void route_advanced() {
+	if (!(ESPTemplateProcessor(server).send("/advanced.html", root_processor)))
+		server.send(404, "text/plain", "Page not found.");
+}
+
 String root_processor(const String& key) {
-	if (key == String("CONN_MODE")) {
-		if (WiFi.getMode() == WIFI_AP) return "WiFi Mode: AP";
-		else return String("WiFi Mode: Station");
-	} else if (key == String("CONN_STATUS")) {
-		if (WiFi.getMode() == WIFI_AP) return "Operating";
-		else switch (WiFi.status()) {
+	if (key == String("WIFI_STATUS_TEXT")) {
+		if (WiFi.getMode() == WIFI_AP) return "working as AP";
+		switch (WiFi.status()) {
 			case WL_CONNECTED:
-				return "Connected";
+				return "connected";
 			case WL_DISCONNECTED:
-				return "Disconnected";
+				return "disconnected";
 			case WL_CONNECT_FAILED:
-				return "Failed to Connect";
+				return "failed to connect";
 			case WL_CONNECTION_LOST:
-				return "Connection Lost";
+				return "lost connection to";
 			default:
-				return "Unknown";
+				return "unknown";
 		}
-	} else if (key == String("CONN_SSID")) {
-		if (WiFi.getMode() == WIFI_AP) return ssid_str;
-		else return WiFi.SSID();
-	} else if (key == String("CONN_IP")) {
-		if (WiFi.getMode() == WIFI_AP) return WiFi.softAPIP().toString();
-		else return WiFi.localIP().toString();
-	} else if (key == String("RF_CHANNELS")) {
-		return String(channel_counter);
-	} else if (key == String("RF_ADDRESSES")) {
-		return String(mesh.addrListTop);
+	} else if (key == String("WIFI_STATUS_CLASS")) {
+		if (WiFi.getMode() == WIFI_AP) return "success";
+		if (WiFi.status() == WL_CONNECTED) return "success";
+		if (WiFi.status() == WL_CONNECT_FAILED) return "danger";
+		return "unknown";
 	} else if (key == String("RF_ADDRLIST")) {
 		String message = "<ul class=\"list-group\">";
 		for (int i = 0; i < mesh.addrListTop; i++) {
@@ -83,22 +71,18 @@ String root_processor(const String& key) {
 		return message;
 	} else if (key == String("RF_TRAFFIC")) {
 		return String(trfc_counter);
-	} else if (key == String("MQTT_MODE")) {
-		if (mqtt_broker_enable) return "MQTT: On";
-		else return "MQTT: Off";
-	} else if (key == String("MQTT_STATUS")) {
-		if (mqtt_on) return "Connected";
-		else return "Trying to connect";
-	} else if (key == String("MQTT_ADDR")) {
-		if (mqtt_on) return mqtt_broker_address;
-		else return "N/A";
+	} else if (key == String("MQTT_STATUS_TEXT")) {
+		if (mqtt_on) return "connected";
+		else return "not connected";
+	} else if (key == String("MQTT_STATUS_CLASS")) {
+		if (mqtt_on) return "success";
+		else return "danger";
 	} else return "N/A";
 }
 
 void route_enable_mqtt() {
 	if (server.hasArg("address")) {
 		mqtt_broker_address = server.arg("address");
-		mqtt_broker_enable = 1;
 		if (server.hasArg("username")) {
 			mqtt_username = server.arg("username");
 			mqtt_password = server.arg("password");
@@ -116,39 +100,84 @@ void route_enable_mqtt() {
 	}
 }
 
+void route_addr_broker() {
+	if (!server.hasArg("addr")) {
+		server.send(200, "application/json", "{\"status\": \"error\"}");
+		return;
+	}
+	String addr = server.arg("addr");
+	param::set_mqtt_address(addr);
+	server.send(200, "application/json", "{\"status\": \"success\"}");
+}
+
+void route_addr_iam() {
+	if (!server.hasArg("addr")) {
+		server.send(200, "application/json", "{\"status\": \"error\"}");
+		return;
+	}
+	String addr = server.arg("addr");
+	param::set_iam_address(addr);
+	server.send(200, "application/json", "{\"status\": \"success\"}");
+}
+
+void route_mqtt_login_mqi() {
+	param::set_mqtt_username("");
+	param::set_mqtt_password("");
+	if (!server.hasArg("token")) {
+		server.send(200, "application/json", "{\"status\": \"error\"}");
+		return;
+	}
+	String mqtt_token = server.arg("token");
+	param::set_mqtt_mqi_token(mqtt_token);
+	server.send(200, "application/json", "{\"status\": \"success\"}");
+}
+
+void route_mqtt_login() {
+	if (server.hasArg("username"))
+		mqtt_username = server.arg("username");
+	if (server.hasArg("password"))
+		mqtt_password = server.arg("password");
+	param::set_mqtt_username(mqtt_username);
+	param::set_mqtt_password(mqtt_password);
+	server.send(200, "application/json", "{\"status\": \"error\"}");
+}
+
 void route_switch_sta() {
 	if (server.hasArg("ssid") && server.hasArg("password")) {
 		param::set_wifi_ssid(server.arg("ssid"));
 		param::set_wifi_password(server.arg("password"));
 	}
 	server.send(200, "application/json", "{\"status\": \"success\"}");
-	// mqtt_broker_enable = 0;
-	mode_sta_begin(true);
+	ESP.restart();
 }
 
 void route_switch_ap() {
 	server.send(200, "application/json", "{\"status\": \"success\"}");
-	// mqtt_broker_enable = 0;
-	mode_ap_begin(true);
-}
-
-void route_disable_mqtt() {
-	mqtt_broker_enable = 0;
-	param::set_mqtt_address("");
-	Serial.println(F("[MQTT] Broker disabled via REST."));
-	server.send(200, "application/json", "{\"status\": \"success\"}");
+	ESP.restart();
 }
 
 void setup_routes() {
 	server.on("/", route_root);
+	server.on("/advanced", route_advanced);
+	// TODO: Finish these methods
+	server.on("/api/meta/info", dummy_todo);
+	server.on("/api/meta/build", dummy_todo);
+	server.on("/api/addr/iam", route_addr_iam);
+	server.on("/api/addr/broker", route_addr_broker);
+	server.on("/api/wifi/scan", dummy_todo);
+	server.on("/api/mqtt/login_mqi?token=", route_mqtt_login_mqi);
+	server.on("/api/mqtt/login", route_mqtt_login);
+	// TODO: End todo
 	server.on("/wifi/sta", route_switch_sta);
 	server.on("/wifi/ap", route_switch_ap);
-	server.on("/mqtt/enable", route_enable_mqtt);
-	server.on("/mqtt/disable", route_disable_mqtt);
 	server.onNotFound([]() {
 		if (!handleFileRead(server.uri()))
 		server.send(404, "text/plain", "404: Not Found");
   });
+}
+
+void dummy_todo() {
+	
 }
 
 bool handleFileRead(String path) {
@@ -168,26 +197,17 @@ void wifi_init() {
 	auto timeout = millis() + 2000;
 	while (millis() <= timeout) {
 		if (digitalRead(SWITCH_PIN) == LOW) {
-			EEPROM.write(EE_WIFI_MODE, WIFI_MODE_AP);
-			EEPROM.commit();
-			delay(200);
-			break;
+			param::reset_params();
+			ESP.restart();
 		}
 	}
 	display_clear();
 	uint8_t stored_mode = EEPROM.read(EE_WIFI_MODE);
-	switch (stored_mode) {
-		case WIFI_MODE_AP:
-			mode_ap_begin();
-			break;
-		case WIFI_MODE_STA:
-			mode_sta_begin();
-			break;
-		default:
-			EEPROM.write(EE_WIFI_MODE, WIFI_MODE_AP);
-			EEPROM.commit();
-			mode_ap_begin();
-	}
+	String ssid = param::get_wifi_ssid();
+	// TLDR: We kick into AP mode if there's no Wifi SSID remembered
+	if (ssid.length())
+		mode_sta_begin();
+	else mode_ap_begin();
 	setup_routes();
 	server.begin();
 }

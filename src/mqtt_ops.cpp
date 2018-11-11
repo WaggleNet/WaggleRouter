@@ -6,7 +6,6 @@ uint8_t mqtt_on = 0;
 String mqtt_broker_address = "";
 String mqtt_username = "";
 String mqtt_password = "";
-uint8_t mqtt_broker_enable = 0;
 
 String esp_chip_id(ESP.getChipId(), HEX);
 String base_topic = String("esp-mesh/")+esp_chip_id+"/";
@@ -26,11 +25,10 @@ void mqtt_init() {
     mqtt_broker_address = param::get_mqtt_address();
     mqtt_username = param::get_mqtt_username();
     mqtt_password = param::get_mqtt_password();
-    if (mqtt_broker_address.length() > 0) mqtt_broker_enable = 1;
 }
 
 void mqtt_refresh_state() {
-    if (mqtt_broker_enable && !mqtt_on) {
+    if (!mqtt_on) {
         mqtt_on = 1;
         mqclient = PubSubClient(mqtt_broker_address.c_str(), 1883, mqtt_callback, wclient);
         if (process_connection()) {
@@ -46,14 +44,12 @@ void mqtt_refresh_state() {
             Serial.println(F("[MQTT] Connection failed"));
             mqtt_on = 0;
         }
-    } else if (!mqtt_broker_enable && mqtt_on) {
-        mqclient.disconnect();
     }
     if (mqtt_on && !mqclient.connected()) mqtt_on = 0;
 }
 
 void print_mqtt_info() {
-    lcd_mqtt(mqtt_broker_enable, mqtt_on, mqtt_broker_address);
+    lcd_mqtt(1, mqtt_on, mqtt_broker_address);
 }
 
 void mqtt_loop() {

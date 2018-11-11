@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en" >
+<head>
+  <meta charset="UTF-8">
+  <title>WaggleRouter Advanced UI</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel='stylesheet' href='/res/bootstrap.min.css'>
+  <link rel="stylesheet" href="/main.css">
+</head>
+<body>
+<div class="header"><img src="https://i.wagglenet.org/static/banner.png"/></div>
+<div class="main">
+  <h3 class="title">Advanced</h3>
+  <h4 class="section-header">MQTT Broker</h4>
+  <div class="section">
+    <p class="caption">Changing the default MQTT parameter will cause your device to be disconnected from the WaggleNet Cloud. To restore this, you must reset the device.</p>
+    <form>
+      <div class="form-group">
+        <input class="form-control" placeholder="your-own-broker.example.com"/>
+      </div>
+      <button class="btn btn-danger" type="submit">Change</button>
+    </form>
+  </div>
+  <h4 class="section-header">MQTT Custom Login</h4>
+  <div class="section">
+    <form>
+      <div class="form-group">
+        <input class="form-control" placeholder="MQTT SSID"/>
+      </div>
+      <div class="form-group">
+        <input class="form-control" placeholder="MQTT Password"/>
+      </div>
+      <button class="btn btn-primary" type="submit">Connect</button>
+    </form>
+  </div>
+</div>
+<script src="/main.js"/>
+</body>
+</html>

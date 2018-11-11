@@ -15,7 +15,6 @@ extern uint8_t mqtt_on;
 extern String mqtt_broker_address;
 extern String mqtt_username;
 extern String mqtt_password;
-extern uint8_t mqtt_broker_enable;
 
 void mqtt_refresh_state();
 void print_mqtt_info();

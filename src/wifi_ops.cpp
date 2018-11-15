@@ -156,15 +156,48 @@ void route_switch_ap() {
 	ESP.restart();
 }
 
+void route_scan_wifi() {
+	int count = WiFi.scanNetworks();
+	String result = "{\"networks\": [";
+	for (int i = 0; i < count; i++) {
+		result += "{\"name\": \"";
+		result += WiFi.SSID(i);
+		result += "\", \"secure\":";
+		if (WiFi.encryptionType(i) == ENC_TYPE_NONE)
+			result += "false},";
+		else result += "true},";
+	}
+	result += "]}";
+	server.send(200, "application/json", result);
+}
+
+void route_build_ver() {
+	String ver = "{\"major\": ";
+	ver += MAJOR_VER;
+	ver += ", \"minor\": ";
+	ver += MINOR_VER;
+	ver += ", \"build\": ";
+	ver += BUILD_VER;
+	ver += "}";
+	server.send(200, "application/json", ver);
+}
+
+void route_device_info() {
+	String info = "{\"type\": \"";
+	info += DEVTYPE;
+	info += "\", \"device_id\": \"";
+	info += WiFi.macAddress() + String(ESP.getFlashChipId(), HEX);
+}
+
 void setup_routes() {
 	server.on("/", route_root);
 	server.on("/advanced", route_advanced);
 	// TODO: Finish these methods
-	server.on("/api/meta/info", dummy_todo);
-	server.on("/api/meta/build", dummy_todo);
+	server.on("/api/meta/info", route_device_info);
+	server.on("/api/meta/build", route_build_ver);
 	server.on("/api/addr/iam", route_addr_iam);
 	server.on("/api/addr/broker", route_addr_broker);
-	server.on("/api/wifi/scan", dummy_todo);
+	server.on("/api/wifi/scan", route_scan_wifi);
 	server.on("/api/mqtt/login_mqi?token=", route_mqtt_login_mqi);
 	server.on("/api/mqtt/login", route_mqtt_login);
 	// TODO: End todo
@@ -174,10 +207,6 @@ void setup_routes() {
 		if (!handleFileRead(server.uri()))
 		server.send(404, "text/plain", "404: Not Found");
   });
-}
-
-void dummy_todo() {
-	
 }
 
 bool handleFileRead(String path) {
@@ -202,7 +231,6 @@ void wifi_init() {
 		}
 	}
 	display_clear();
-	uint8_t stored_mode = EEPROM.read(EE_WIFI_MODE);
 	String ssid = param::get_wifi_ssid();
 	// TLDR: We kick into AP mode if there's no Wifi SSID remembered
 	if (ssid.length())

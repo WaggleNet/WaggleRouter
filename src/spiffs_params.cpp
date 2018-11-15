@@ -85,7 +85,7 @@ namespace param {
         return fs::write_str("/mqtt/mqi_token", s);
     }
 
-    void reset_params(String) {
+    void reset_params() {
         set_mqtt_address("broker.wagglenet.org");
         set_iam_address("iam.wagglenet.org");
         set_mqtt_username("");

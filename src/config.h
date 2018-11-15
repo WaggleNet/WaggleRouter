@@ -27,4 +27,14 @@
 #define WIFI_MODE_AP 0
 #define WIFI_MODE_STA 1
 
+// Versioning
+
+#define MAJOR_VER 1
+#define MINOR_VER 2
+#define BUILD_VER 4
+
+// Device Type
+
+#define DEVTYPE "wn-router.2.1"
+
 String getContentType(String);

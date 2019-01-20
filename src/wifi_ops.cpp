@@ -101,13 +101,17 @@ void route_enable_mqtt() {
 }
 
 void route_addr_broker() {
-	if (!server.hasArg("addr")) {
+	if (!server.hasArg("address")) {
 		server.send(200, "application/json", "{\"status\": \"error\"}");
 		return;
 	}
-	String addr = server.arg("addr");
+	String addr = server.arg("address");
 	param::set_mqtt_address(addr);
-	server.send(200, "application/json", "{\"status\": \"success\"}");
+	if (server.hasArg("browser")) {
+		server.sendHeader("Location", String("/advanced"), true);
+		server.send (302, "text/plain", "");
+	} else
+		server.send(200, "application/json", "{\"status\": \"success\"}");
 }
 
 void route_addr_iam() {
@@ -139,20 +143,35 @@ void route_mqtt_login() {
 		mqtt_password = server.arg("password");
 	param::set_mqtt_username(mqtt_username);
 	param::set_mqtt_password(mqtt_password);
-	server.send(200, "application/json", "{\"status\": \"error\"}");
+	if (server.hasArg("browser")) {
+		server.sendHeader("Location", String("/advanced"), true);
+		server.send (302, "text/plain", "");
+	} else
+		server.send(200, "application/json", "{\"status\": \"error\"}");
 }
 
 void route_switch_sta() {
 	if (server.hasArg("ssid") && server.hasArg("password")) {
+		Serial.print(F("Setting ssid to "));
+		Serial.println(server.arg("ssid"));
 		param::set_wifi_ssid(server.arg("ssid"));
 		param::set_wifi_password(server.arg("password"));
 	}
-	server.send(200, "application/json", "{\"status\": \"success\"}");
+	if (server.hasArg("browser")) {
+		server.sendHeader("Location", String("/"), true);
+		server.send(302, "text/plain", "");
+	} else
+		server.send(200, "application/json", "{\"status\": \"success\"}");
 	ESP.restart();
 }
 
 void route_switch_ap() {
-	server.send(200, "application/json", "{\"status\": \"success\"}");
+	param::set_wifi_ssid("");
+	if (server.hasArg("browser")) {
+		server.sendHeader("Location", String("/"), true);
+		server.send(302, "text/plain", "");
+	} else
+		server.send(200, "application/json", "{\"status\": \"success\"}");
 	ESP.restart();
 }
 

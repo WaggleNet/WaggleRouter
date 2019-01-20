@@ -8,21 +8,24 @@
   <link rel="stylesheet" href="/main.css">
 </head>
 <body>
-<div class="header"><img src="https://i.wagglenet.org/static/banner.png"/></div>
+<div class="header"><img src="/res/banner.png"/></div>
 <div class="main">
   <h3 class="title">Welcome</h3>
   <p class="caption">Glad you found this page! This is for power users to tweak the router settings and troubleshoot its functionalities. However, we strongly encourage that you use the mobile or desktop app to configure this Router.</p>
   <h4 class="section-header">Wi-Fi Network</h4>
   <div class="section">
     <p class="status %WIFI_STATUS_CLASS%">Currently %WIFI_STATUS_TEXT%</p>
-    <form>
+    <form action="/wifi/sta">
       <div class="form-group">
-        <input class="form-control" placeholder="Wi-Fi SSID"/>
+        <input class="form-control" placeholder="Wi-Fi SSID" name="ssid"/>
       </div>
       <div class="form-group">
-        <input class="form-control" placeholder="Wi-Fi Password"/>
+        <input class="form-control" placeholder="Wi-Fi Password" type="password" name="password"/>
       </div>
+      <input type="hidden" id="form1" name="browser" value="true">
       <button class="btn btn-primary" type="submit">Connect</button>
+      <br>
+      <a class="btn btn-primary" href="/wifi/ap">Switch to AP Mode</a>
     </form>
   </div>
   <h4 class="section-header">Connected Nodes</h4>
@@ -33,7 +36,7 @@
   <div class="section">
     <p class="status %MQTT_STATUS_CLASS%">%MQTT_STATUS_TEXT%</p>
     <p class="caption">If you know the implications, you can configure advanced settings to hack with your Gateway. However, your device will no longer work with WaggleNet Cloud until you reset it.</p>
-    <a href="/advanced" class="btn btn-danger">Advanced Settings</button>
+    <a href="/advanced" class="btn btn-danger">Advanced Settings</a>
   </div>
   <h4 class="section-header">Troubleshooting</h4>
   <div class="section">

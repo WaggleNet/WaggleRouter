@@ -18,12 +18,11 @@ void radio_init(uint8_t node_id) {
     Serial.println(F("[Radio] Mesh network configuration complete"));
 }
 
-String generate_topic(int16_t from_node, uint8_t header_type, char *msg_type) {
-    String topic = base_topic + from_node;
-    topic += "/";
-    topic += header_type;
-    topic += "/";
+String generate_topic(char *msg_type) {
+    String topic = "ingest/";
     topic += msg_type;
+    topic += "/";
+    topic += esp_chip_id;
     return topic;
 }
 
@@ -42,6 +41,38 @@ uint8_t getChannelSize(uint8_t channel) {
 uint8_t isStrChannel(uint8_t channel) {
     if (channel >= 64) channel -= 64;
     return (channel >= 32 && channel <= 63);
+}
+
+
+/** Handle Telemetry Packet (CH# 120)
+ * See https://wagglenet.atlassian.net/wiki/spaces/SPORT/pages/13238331/Node-to-Router+Data+Format
+ */
+void handleTelemetryPkt(byte* data, byte len) {
+    auto topic = generate_topic("telemetry");
+    mqclient.publish(topic.c_str(), data, len);
+}
+
+/** Handle heartbeat packet (CH# 66)
+ * 
+ */
+void handleHeartbeatPkt(byte* data, byte len) {
+    auto topic = generate_topic("heartbeat");
+    mqclient.publish(topic.c_str(), data, len);
+}
+
+/** Handle system message (CH# 67)
+ * 
+ */
+void handleSysMsgPkt(byte* data, byte len) {
+    auto topic = generate_topic("system");
+    mqclient.publish(topic.c_str(), data, len); 
+}
+
+/** Handle sending commands (CH# 121)
+ * 
+ */
+void handleCmdPkt(byte* data, byte len) {
+    return;
 }
 
 void radio_update() {
@@ -63,34 +94,20 @@ void radio_update() {
         byte *payload;
         payload = new byte[data_size];
         network.read(header, payload, data_size);
-        if (header.type == 64) {
-            // Handle channel registration
-            channel_t *ch = (channel_t *) payload;
-            Serial.print(F("Handling REG ch#"));
-            Serial.print(ch -> ch_id);
-            Serial.print(F(" with size "));
-            Serial.println(ch -> size);
-            registerChannel(ch -> ch_id, ch -> size);
-        } else {
-            if (!isStrChannel(header.type)) {
-                if (getChannelSize(header.type) == 0) {
-                    Serial.print("UNDEF - ch#");
-                    Serial.print(header.type);
-                    Serial.print(" is now size ");
-                    Serial.println(data_size);
-                    registerChannel(header.type, data_size);
-                }
-                // Check consistency
-                else if (getChannelSize(header.type) != data_size) {
-                    Serial.print(F("WARNING - Size inconsistent: Expected "));
-                    Serial.print(getChannelSize(header.type));
-                    Serial.print(", got ");
-                    Serial.println(data_size);
-                    registerChannel(header.type, data_size);
-                }
+        #ifdef DEBUG
+            Serial.print(F("Pkt dump: "));
+            for (byte i = 0; i < data_size; i++) {
+                Serial.print(payload[i], HEX);
+                Serial.print(' ');
             }
-            auto topic = generate_topic(mesh.getNodeID(header.from_node), header.type, "status");
-            mqclient.publish(topic.c_str(), payload, data_size);
+            Serial.println();
+        #endif
+        if (header.type == 120) {
+            handleTelemetryPkt(payload, data_size);
+        } else if (header.type == 66) {
+            handleHeartbeatPkt(payload, data_size);
+        } else if (header.type == 67) {
+            handleSysMsgPkt(payload, data_size);
         }
         trfc_counter ++;
         delete[] payload;

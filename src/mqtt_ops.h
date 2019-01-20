@@ -10,6 +10,7 @@
 
 extern PubSubClient mqclient;
 extern String base_topic;
+extern String esp_chip_id;
 extern uint8_t mqtt_on;
 
 extern String mqtt_broker_address;

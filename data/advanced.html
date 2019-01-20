@@ -8,28 +8,30 @@
   <link rel="stylesheet" href="/main.css">
 </head>
 <body>
-<div class="header"><img src="https://i.wagglenet.org/static/banner.png"/></div>
+<div class="header"><img src="/res/banner.png"/></div>
 <div class="main">
   <h3 class="title">Advanced</h3>
   <h4 class="section-header">MQTT Broker</h4>
   <div class="section">
     <p class="caption">Changing the default MQTT parameter will cause your device to be disconnected from the WaggleNet Cloud. To restore this, you must reset the device.</p>
-    <form>
+    <form action="/api/addr/broker">
       <div class="form-group">
-        <input class="form-control" placeholder="your-own-broker.example.com"/>
+        <input class="form-control" placeholder="your-own-broker.example.com" name="address"/>
       </div>
+      <input type="hidden" id="form1" name="browser" value="true">
       <button class="btn btn-danger" type="submit">Change</button>
     </form>
   </div>
   <h4 class="section-header">MQTT Custom Login</h4>
   <div class="section">
-    <form>
+    <form action="/api/mqtt/login">
       <div class="form-group">
-        <input class="form-control" placeholder="MQTT SSID"/>
+        <input class="form-control" placeholder="MQTT Username" name="username"/>
       </div>
       <div class="form-group">
-        <input class="form-control" placeholder="MQTT Password"/>
+        <input class="form-control" placeholder="MQTT Password" type="password" name="password"/>
       </div>
+      <input type="hidden" id="form2" name="browser" value="true">
       <button class="btn btn-primary" type="submit">Connect</button>
     </form>
   </div>

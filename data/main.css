@@ -44,7 +44,7 @@ body {
     margin-bottom: 30px;
     padding: 0 5px;
   }
-  .section button.btn {
+  .section button.btn,a.btn {
     width: 100%;
     border-radius: 0;
     box-shadow: 2px 2px 3px #eee;

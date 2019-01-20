@@ -1,0 +1,3 @@
+[submodule "lib/WaggleNetNet"]
+	path = lib/WaggleNetNet
+	url = https://github.com/WaggleNet/WaggleNetNet.git

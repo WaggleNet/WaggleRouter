@@ -31,7 +31,6 @@ struct channel_t {
 
 void radio_init(uint8_t node_id = 0);
 void radio_update();
-String generate_topic(int16_t from_node, uint8_t header_type, char *msg_type);
 void print_assigned_addresses();
 void registerChannel(uint8_t channel, uint8_t size);
 uint8_t getChannelSize(uint8_t channel);

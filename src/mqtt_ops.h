@@ -22,3 +22,11 @@ void print_mqtt_info();
 void mqtt_callback(char* topic, byte* payload, unsigned int length);
 void mqtt_init();
 void mqtt_loop();
+void mqtt_send_telemetry();
+String generate_topic(char *msg_type);
+
+struct mesh_status_t {
+    uint8_t mac[6];
+    uint16_t node_counter;
+    uint16_t trfc_counter;
+};

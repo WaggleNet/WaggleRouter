@@ -18,14 +18,6 @@ void radio_init(uint8_t node_id) {
     Serial.println(F("[Radio] Mesh network configuration complete"));
 }
 
-String generate_topic(char *msg_type) {
-    String topic = "ingest/";
-    topic += msg_type;
-    topic += "/";
-    topic += esp_chip_id;
-    return topic;
-}
-
 void registerChannel(uint8_t channel, uint8_t size) {
     if (channel >=64) channel -= 64;
     if (registry[channel] == 0) channel_counter ++;

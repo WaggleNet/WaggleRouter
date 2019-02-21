@@ -23,15 +23,22 @@ void setup() {
 
 
 void loop() {
+	// Real time update block
 	radio_update();
 	wifi_update();
 	if(millis() - displayTimer > 5000){
+		// Update every 5000 seconds:
+		// - Screen display
+		// - Debug info
+		// - Reconnecting to MQTT if needed
+		// - Transmit health telemetry
 		displayTimer = millis();
 		print_assigned_addresses();
 		print_wifi_info();
         print_mqtt_info();
 		mqtt_refresh_state();
 		print_radio_info();
+		mqtt_send_telemetry();
 	}
 	mqtt_loop();
     ota_update();

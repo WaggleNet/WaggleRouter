@@ -2,14 +2,16 @@
 
 PubSubClient mqclient;
 
+uint32_t buf[128] = {};
 uint8_t mqtt_on = 0;
-String mqtt_broker_address = "";
-String mqtt_username = "";
-String mqtt_password = "";
+String mqtt_broker_address;
+String mqtt_username;
+String mqtt_password;
+String mqi_token;
 
 String esp_chip_id(ESP.getChipId(), HEX);
 String base_topic = String("ingest/telemetry/")+esp_chip_id;
-String node_name = String("esp-") + esp_chip_id;
+String node_name = String("DEV-") + esp_chip_id;
 
 mesh_status_t mesh_status_pkt;
 
@@ -22,13 +24,20 @@ String generate_topic(char *msg_type) {
 }
 
 boolean process_connection() {
-    if (mqtt_username.length())
+    if (mqtt_username.length()) {
+        Serial.println(F("[MQTT] Logging in with MQTT custom username..."));
         return mqclient.connect(
             node_name.c_str(),
             mqtt_username.c_str(),
             mqtt_password.c_str()
         );
-    else return mqclient.connect(node_name.c_str());
+    } else if (mqi_token.length()) {
+        Serial.println(F("[MQTT] Logging in with MQI Token..."));
+        return mqclient.connect(node_name.c_str(), mqi_token.c_str(), "password");
+    } else {
+        Serial.println(F("[MQTT] Logging in insecured..."));
+        return mqclient.connect(node_name.c_str());
+    }
 }
 
 void mqtt_init() {
@@ -36,9 +45,10 @@ void mqtt_init() {
     mqtt_broker_address = param::get_mqtt_address();
     mqtt_username = param::get_mqtt_username();
     mqtt_password = param::get_mqtt_password();
+    mqi_token = param::get_mqtt_mqi_token();
     uint32_t mac = ESP.getChipId();
     // Prefill the invariant info on the pkt.
-    for (int8_t i = 5; i >= 0; i++) {
+    for (int8_t i = 5; i >= 0; i--) {
         mesh_status_pkt.mac[i] = mac & 0xff;
         mac >>= 8;
     }
@@ -56,7 +66,8 @@ void mqtt_refresh_state() {
             mqclient.publish(generate_topic("router_legacy").c_str(), message.c_str());
             mqclient.subscribe(generate_topic("command").c_str());
         } else {
-            Serial.println(F("[MQTT] Connection failed"));
+            Serial.print(F("[MQTT] Connection failed: "));
+            Serial.println(mqclient.state());
             mqtt_on = 0;
         }
     }

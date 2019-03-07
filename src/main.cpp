@@ -16,9 +16,9 @@ void setup() {
     display_init();
 	radio_init();
 	wifi_init();
-    print_mqtt_info();
     ota_init();
 	mqtt_init();
+    print_mqtt_info();
 }
 
 

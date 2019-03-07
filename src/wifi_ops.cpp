@@ -127,13 +127,36 @@ void route_addr_iam() {
 void route_mqtt_login_mqi() {
 	param::set_mqtt_username("");
 	param::set_mqtt_password("");
+	String mqtt_token;
+	HTTPClient http;
+	String iam_endpoint;
+	int http_code;
 	if (!server.hasArg("token")) {
-		server.send(200, "application/json", "{\"status\": \"error\"}");
-		return;
+		goto bail;
 	}
-	String mqtt_token = server.arg("token");
-	param::set_mqtt_mqi_token(mqtt_token);
-	server.send(200, "application/json", "{\"status\": \"success\"}");
+	mqtt_token = server.arg("token");
+	// Now actually get the token
+	Serial.print("Requesting MQI access code for token");
+	Serial.println(mqtt_token);
+	iam_endpoint = param::get_iam_address() + "/mqi/redeem/device?device_id=";
+	iam_endpoint += esp_chip_id;
+	iam_endpoint += "&token=";
+	iam_endpoint += mqtt_token;
+	if (http.begin(iam_endpoint)) {
+		http_code = http.GET();
+		if (http_code == HTTP_CODE_OK) {
+			param::set_mqtt_mqi_token(http.getString());
+			http.end();
+			Serial.print("[HTTP] Successfully obtained MQI Token ");
+			Serial.println(param::get_mqtt_mqi_token());
+			server.send(200, "application/json", "{\"status\": \"success\"}");
+			mqtt_init();
+		}
+		http.end();
+	}
+	bail:
+	server.send(200, "application/json", "{\"status\": \"error\"}");
+		return;
 }
 
 void route_mqtt_login() {
@@ -217,7 +240,7 @@ void setup_routes() {
 	server.on("/api/addr/iam", route_addr_iam);
 	server.on("/api/addr/broker", route_addr_broker);
 	server.on("/api/wifi/scan", route_scan_wifi);
-	server.on("/api/mqtt/login_mqi?token=", route_mqtt_login_mqi);
+	server.on("/api/mqtt/login_mqi", route_mqtt_login_mqi);
 	server.on("/api/mqtt/login", route_mqtt_login);
 	// TODO: End todo
 	server.on("/wifi/sta", route_switch_sta);

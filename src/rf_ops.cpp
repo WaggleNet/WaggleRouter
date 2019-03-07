@@ -6,7 +6,6 @@ RF24Mesh mesh(radio,network);
 
 #define DEBUG 1
 
-uint8_t registry[32];
 uint8_t channel_counter = 0;
 uint16_t trfc_counter = 0;
 
@@ -18,22 +17,6 @@ void radio_init(uint8_t node_id) {
     Serial.println(F("[Radio] Mesh network configuration complete"));
 }
 
-void registerChannel(uint8_t channel, uint8_t size) {
-    if (channel >=64) channel -= 64;
-    if (registry[channel] == 0) channel_counter ++;
-    registry[channel] = size;
-    print_radio_info();
-}
-
-uint8_t getChannelSize(uint8_t channel) {
-    if (channel >= 64) channel -= 64;
-    return registry[channel];
-}
-
-uint8_t isStrChannel(uint8_t channel) {
-    if (channel >= 64) channel -= 64;
-    return (channel >= 32 && channel <= 63);
-}
 
 
 /** Handle Telemetry Packet (CH# 120)

@@ -1,4 +1,5 @@
 #include "wifi_ops.h"
+#include "crypto.h"
 
 ESP8266WebServer server(80);
 WiFiClient wclient;
@@ -145,7 +146,9 @@ void route_mqtt_login_mqi() {
 	if (http.begin(iam_endpoint)) {
 		http_code = http.GET();
 		if (http_code == HTTP_CODE_OK) {
-			param::set_mqtt_mqi_token(http.getString());
+			String response = http.getString();
+			decrypt_mqi_store(response);
+			// param::set_mqtt_mqi_token(http.getString());
 			http.end();
 			Serial.print("[HTTP] Successfully obtained MQI Token ");
 			Serial.println(param::get_mqtt_mqi_token());

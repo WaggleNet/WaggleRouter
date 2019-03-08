@@ -15,7 +15,7 @@ namespace param {
     String get_mqtt_password();
     String get_mqtt_mqi_token();
     // Read-only
-    String get_secret_key();
+    int get_secret_key(uint8_t* data);
     String get_ap_password();
 
     void set_wifi_ssid(String);

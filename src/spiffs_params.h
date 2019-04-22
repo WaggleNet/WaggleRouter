@@ -1,5 +1,6 @@
 #include <FS.h>
 #include "Arduino.h"
+#include "RF24Mesh.h"
 
 namespace fs {
     String read_str(String);
@@ -25,6 +26,9 @@ namespace param {
     void set_mqtt_username(String);
     void set_mqtt_password(String);
     void set_mqtt_mqi_token(String);
+
+    void set_whitelist(nodeid_t* addresses, size_t length);
+    size_t get_whitelist(nodeid_t* addresses);
     
     void reset_params();
 }

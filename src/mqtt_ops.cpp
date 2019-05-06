@@ -1,4 +1,5 @@
 #include "mqtt_ops.h"
+#include "config.h"
 
 PubSubClient mqclient;
 
@@ -9,7 +10,7 @@ String mqtt_username;
 String mqtt_password;
 String mqi_token;
 
-String esp_chip_id(ESP.getChipId(), HEX);
+String esp_chip_id(getRouterID(), HEX);
 String base_topic = String("ingest/telemetry/")+esp_chip_id;
 String node_name = String("DEV-") + esp_chip_id;
 

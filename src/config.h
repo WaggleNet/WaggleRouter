@@ -42,3 +42,4 @@
 #define DEVTYPE "wn-router.2.1"
 
 String getContentType(String);
+uint32_t getRouterID();

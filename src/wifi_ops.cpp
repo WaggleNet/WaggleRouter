@@ -1,10 +1,11 @@
 #include "wifi_ops.h"
 #include "crypto.h"
+#include "config.h"
 
 ESP8266WebServer server(80);
 WiFiClient wclient;
 
-const String ssid_str = String("WaggleRouter_") + String(ESP.getChipId(), HEX);
+const String ssid_str = String("WaggleRouter_") + String(getRouterID(), HEX);
 const char* ssid = ssid_str.c_str();
 
 void mode_ap_begin() {
@@ -231,7 +232,7 @@ void route_device_info() {
 	String info = "{\"type\": \"";
 	info += DEVTYPE;
 	info += "\", \"device_id\": \"";
-	info += WiFi.macAddress() + String(ESP.getFlashChipId(), HEX);
+	info += String(getRouterID(), HEX);
 }
 
 void setup_routes() {

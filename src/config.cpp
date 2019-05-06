@@ -15,3 +15,7 @@ String getContentType(String filename){
   else if(filename.endsWith(".gz")) return "application/x-gzip";
   return "text/plain";
 }
+
+uint32_t getRouterID() {
+  return ESP.getChipId() + ESP.getFlashChipId();
+}

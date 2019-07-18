@@ -11,6 +11,8 @@ const char* ssid = ssid_str.c_str();
 void mode_ap_begin() {
 	WiFi.mode(WIFI_AP);
 	WiFi.softAP(ssid, param::get_ap_password().c_str());
+	Serial.println("AP Password:");
+	Serial.println(param::get_ap_password());
 	// Finally, print everything out...
 	print_wifi_info();
 }
@@ -24,8 +26,8 @@ void mode_sta_begin() {
 	else WiFi.begin(sta_ssid.c_str(), sta_pwd.c_str());
 	Serial.print(F("Connecting to WiFi AP: "));
 	Serial.println(sta_ssid);
-	Serial.print(F("With password: "));
-	Serial.println(sta_pwd);
+	// Serial.print(F("With password: "));
+	// Serial.println(sta_pwd);
 	// Finally, print everything out...
 	print_wifi_info();
 }
@@ -224,7 +226,7 @@ void route_build_ver() {
 	ver += MINOR_VER;
 	ver += ", \"build\": ";
 	ver += BUILD_VER;
-	ver += "}";
+	ver += "\"}";
 	server.send(200, "application/json", ver);
 }
 
@@ -233,6 +235,9 @@ void route_device_info() {
 	info += DEVTYPE;
 	info += "\", \"device_id\": \"";
 	info += String(getRouterID(), HEX);
+	info += "\"}";
+	Serial.println(info);
+	server.send(200, "application/json", info);
 }
 
 void setup_routes() {

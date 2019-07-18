@@ -36,8 +36,8 @@ void lcd_radio_info(uint8_t channels, uint8_t nodes, uint8_t traffic) {
 void welcome_screen() {
     display.clearDisplay();
 	display.setCursor(5,8);
-	display.println(F("PRESS BUTTON"));
-	display.println(F("To force into AP mode."));
+	display.println(F("PRESS BUTTON to"));
+	display.println(F("set it up."));
 	display.display();
 }
 

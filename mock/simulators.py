@@ -45,7 +45,7 @@ class MockRouter:
         # Call /mqi/redeem/device?device_id=...&token=...
         resp = requests.get(
             '{}/mqi/redeem/device?device_id={}&token={}'
-            .format(self.iam_addr, self.router_id_num, self.mqi_token))
+            .format(self.iam_addr, self.router_id, self.mqi_token))
         resp.raise_for_status()
         logging.info('MQI token transported')
         # Use secret key to do AES decryption
@@ -54,8 +54,8 @@ class MockRouter:
         # Then store the result in self.mqi
         if isinstance(mqi, bytes):
             mqi = mqi.decode()
-        self.mqi = mqi
-        logging.info('MQI token successfully installed')
+        self.mqi = mqi[:36]
+        logging.info('MQI token successfully installed: %s', mqi)
 
     def on_mgmt_broker_connect(self, ch, userdata, flags, rc):
         logging.info('Mgmt interface connected, rc={}'.format(rc))
@@ -93,10 +93,12 @@ class MockRouter:
             port = int(port)
         self.test_conn.on_connect = self.on_test_broker_connect
         self.test_conn.username_pw_set(self.mqi)
-        self.test_conn.connect(host, port)
-        logging.info('Connecting to broker on %s:%s', host, port)
-        self.test_conn.loop_start()
+        return_code = self.test_conn.connect(host, port)
+        logging.info(
+            'Connecting to broker on %s:%s (%d)',
+            host, port, return_code)
         self.test_broker_connected = True
+        self.test_conn.loop_start()
 
     def disconnect_broker(self):
         self.test_conn.loop_stop()

@@ -1,0 +1,20 @@
+router:
+  router_id: 'badb3f'
+  secret_key: '7369787465656e2062797465206b6579' # sixteen byte key
+  iam_addr: 'http://localhost:15002'
+  mgmt_broker: 'localhost:1883'
+  test_broker: 'localhost:1884'
+
+nodes:
+- node_id: 'baad0001'
+  node_addr: 1
+  sensors:
+    - sensor_type: 1000
+      sensor_addr: 1
+      entries:
+        - format: 'I'
+          size: 4
+          value: 1
+        - format: 'I'
+          size: 4
+          value: 2

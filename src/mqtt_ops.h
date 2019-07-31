@@ -17,13 +17,14 @@ extern String mqtt_broker_address;
 extern String mqtt_username;
 extern String mqtt_password;
 
-void mqtt_refresh_state();
+void retrieve_mqi_token();
+void mqtt_connect();
 void print_mqtt_info();
 void mqtt_callback(char* topic, byte* payload, unsigned int length);
 void mqtt_init();
 void mqtt_loop();
 void mqtt_send_telemetry();
-String generate_topic(char *msg_type);
+String generate_topic(const char *msg_type);
 
 struct mesh_status_t {
     uint8_t mac[6];

@@ -36,7 +36,6 @@ void loop() {
 		print_assigned_addresses();
 		print_wifi_info();
         print_mqtt_info();
-		mqtt_refresh_state();
 		print_radio_info();
 		mqtt_send_telemetry();
 	}

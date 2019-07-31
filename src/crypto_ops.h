@@ -25,5 +25,5 @@ static void decrypt_mqi_store(String& mqi_encrypted) {
     // Plaintext is size 36, so set byte 36 to 0
     plaintext[MQI_TOKEN_SIZE] = 0;
     // Serial.printf("Plaintext: %s\n", plaintext);
-    param::set_mqtt_mqi_token(String((char*)plaintext));
+    param::set_mqtt_username(String((char*)plaintext));
 }

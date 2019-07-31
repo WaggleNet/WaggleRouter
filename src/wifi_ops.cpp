@@ -1,6 +1,5 @@
 #include "wifi_ops.h"
 #include "config.h"
-#include "crypto_ops.h"
 
 ESP8266WebServer server(80);
 WiFiClient wclient;
@@ -129,37 +128,14 @@ void route_addr_iam() {
 }
 
 void route_mqtt_login_mqi() {
+	String broker_addr = param::get_mqtt_address();
+	if (!server.hasArg("token")) goto bail;
+	// PRE-CHECK: If custom server is set, refuse mqi auth
+	if (broker_addr.length()) goto bail;
+	// Also clear MQTT username and password
+	param::set_mqtt_mqi_token(server.arg("token"));
 	param::set_mqtt_username("");
 	param::set_mqtt_password("");
-	String mqtt_token;
-	HTTPClient http;
-	String iam_endpoint;
-	int http_code;
-	if (!server.hasArg("token")) {
-		goto bail;
-	}
-	mqtt_token = server.arg("token");
-	// Now actually get the token
-	Serial.print("Requesting MQI access code for token");
-	Serial.println(mqtt_token);
-	iam_endpoint = param::get_iam_address() + "/mqi/redeem/device?device_id=";
-	iam_endpoint += esp_chip_id;
-	iam_endpoint += "&token=";
-	iam_endpoint += mqtt_token;
-	if (http.begin(iam_endpoint)) {
-		http_code = http.GET();
-		if (http_code == HTTP_CODE_OK) {
-			String response = http.getString();
-			decrypt_mqi_store(response);
-			// param::set_mqtt_mqi_token(http.getString());
-			http.end();
-			Serial.print("[HTTP] Successfully obtained MQI Token ");
-			Serial.println(param::get_mqtt_mqi_token());
-			server.send(200, "application/json", "{\"status\": \"success\"}");
-			mqtt_init();
-		}
-		http.end();
-	}
 	bail:
 	server.send(200, "application/json", "{\"status\": \"error\"}");
 		return;

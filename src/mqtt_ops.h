@@ -24,7 +24,7 @@ void mqtt_callback(char* topic, byte* payload, unsigned int length);
 void mqtt_init();
 void mqtt_loop();
 void mqtt_send_telemetry();
-String generate_topic(const char *msg_type);
+String generate_topic(const char *msg_type, String topic = "ingest/");
 
 struct mesh_status_t {
     uint8_t mac[6];

@@ -31,3 +31,5 @@ void radio_init(uint8_t node_id = 0);
 void radio_update();
 void print_assigned_addresses();
 void print_radio_info();
+
+void handleCmdPkt(byte* data, byte len);

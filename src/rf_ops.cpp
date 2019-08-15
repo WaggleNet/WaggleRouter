@@ -44,10 +44,16 @@ void handleSysMsgPkt(byte* data, byte len) {
 }
 
 /** Handle sending commands (CH# 121)
- * 
+ * Send command to the device in question.
  */
 void handleCmdPkt(byte* data, byte len) {
-    return;
+    nodeid_t node_id;
+    // STEP 1: Parse Node ID and locate the node
+    memcpy(&node_id, data, sizeof(node_id));
+    address_t dest_addr = mesh.getAddress(node_id);
+    if (!dest_addr) return;  // Node not found
+    // STEP 2: Send the damn packet
+    mesh.write(dest_addr, data, 121, len);
 }
 
 void radio_update() {

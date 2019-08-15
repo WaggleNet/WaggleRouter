@@ -22,8 +22,7 @@ mesh_status_t mesh_status_pkt;
 /**
  * HELPER: Generates the topic string
  */
-String generate_topic(const char *msg_type) {
-    String topic = "ingest/";
+String generate_topic(const char *msg_type, String topic) {
     topic += msg_type;
     topic += "/";
     topic += esp_chip_id;
@@ -142,11 +141,11 @@ void print_mqtt_info() {
 }
 
 void mqtt_callback(char* topic, byte* payload, unsigned int length) {
-    Serial.print(F("[MQTT] Received message on MQTT, node#"));
+    Serial.print(F("[MQTT] Received message on MQTT, topic "));
     String t(topic);
     uint32_t nodeID = *(uint32_t*) payload;
     Serial.print(nodeID);
     Serial.print(", size ");
     Serial.println(length);
-    mesh.write(payload, 121, length, nodeID);
+    handleCmdPkt(payload, length);
 }

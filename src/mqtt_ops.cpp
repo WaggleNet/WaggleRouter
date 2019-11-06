@@ -130,6 +130,7 @@ void mqtt_send_telemetry() {
     // Fill the status pkt with actual data
     mesh_status_pkt.node_counter = mesh.addrListTop;
     mesh_status_pkt.trfc_counter = trfc_counter;
+    mesh_status_pkt.rssi = WiFi.RSSI();
     // Save this to the buffer
     memcpy(buffer+15, &mesh_status_pkt, sizeof(mesh_status_t));
     // Publish

@@ -39,11 +39,12 @@ void mqtt_init() {
     mqtt_password = param::get_mqtt_password();
     mqi_token = param::get_mqtt_mqi_token();
     uint32_t mac = ESP.getChipId();
+    // We no longer fill the mac address onto the mesh status packet
     // Prefill the invariant info on the pkt.
-    for (int8_t i = 5; i >= 0; i--) {
-        mesh_status_pkt.mac[i] = mac & 0xff;
-        mac >>= 8;
-    }
+    // for (int8_t i = 5; i >= 0; i--) {
+    //     mesh_status_pkt.mac[i] = mac & 0xff;
+    //     mac >>= 8;
+    // }
 }
 
 /**
@@ -130,6 +131,7 @@ void mqtt_send_telemetry() {
     // Fill the status pkt with actual data
     mesh_status_pkt.node_counter = mesh.addrListTop;
     mesh_status_pkt.trfc_counter = trfc_counter;
+    mesh_status_pkt.rssi = WiFi.RSSI();
     // Save this to the buffer
     memcpy(buffer+15, &mesh_status_pkt, sizeof(mesh_status_t));
     // Publish

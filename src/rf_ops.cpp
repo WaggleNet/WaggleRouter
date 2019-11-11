@@ -6,7 +6,6 @@ RF24Mesh mesh(radio,network);
 
 #define DEBUG 1
 
-uint8_t registry[32];
 uint8_t channel_counter = 0;
 uint16_t trfc_counter = 0;
 
@@ -18,30 +17,6 @@ void radio_init(uint8_t node_id) {
     Serial.println(F("[Radio] Mesh network configuration complete"));
 }
 
-String generate_topic(char *msg_type) {
-    String topic = "ingest/";
-    topic += msg_type;
-    topic += "/";
-    topic += esp_chip_id;
-    return topic;
-}
-
-void registerChannel(uint8_t channel, uint8_t size) {
-    if (channel >=64) channel -= 64;
-    if (registry[channel] == 0) channel_counter ++;
-    registry[channel] = size;
-    print_radio_info();
-}
-
-uint8_t getChannelSize(uint8_t channel) {
-    if (channel >= 64) channel -= 64;
-    return registry[channel];
-}
-
-uint8_t isStrChannel(uint8_t channel) {
-    if (channel >= 64) channel -= 64;
-    return (channel >= 32 && channel <= 63);
-}
 
 
 /** Handle Telemetry Packet (CH# 120)
@@ -69,10 +44,16 @@ void handleSysMsgPkt(byte* data, byte len) {
 }
 
 /** Handle sending commands (CH# 121)
- * 
+ * Send command to the device in question.
  */
 void handleCmdPkt(byte* data, byte len) {
-    return;
+    nodeid_t node_id;
+    // STEP 1: Parse Node ID and locate the node
+    memcpy(&node_id, data, sizeof(node_id));
+    address_t dest_addr = mesh.getAddress(node_id);
+    if (!dest_addr) return;  // Node not found
+    // STEP 2: Send the damn packet
+    mesh.write(dest_addr, data, 121, len);
 }
 
 void radio_update() {

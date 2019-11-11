@@ -1,14 +1,17 @@
 #include "wifi_ops.h"
+#include "config.h"
 
 ESP8266WebServer server(80);
 WiFiClient wclient;
 
-const String ssid_str = String("WaggleRouter_") + String(ESP.getChipId(), HEX);
+const String ssid_str = String("WaggleRouter_") + String(getRouterID(), HEX);
 const char* ssid = ssid_str.c_str();
 
 void mode_ap_begin() {
 	WiFi.mode(WIFI_AP);
 	WiFi.softAP(ssid, param::get_ap_password().c_str());
+	Serial.println("AP Password:");
+	Serial.println(param::get_ap_password());
 	// Finally, print everything out...
 	print_wifi_info();
 }
@@ -22,8 +25,8 @@ void mode_sta_begin() {
 	else WiFi.begin(sta_ssid.c_str(), sta_pwd.c_str());
 	Serial.print(F("Connecting to WiFi AP: "));
 	Serial.println(sta_ssid);
-	Serial.print(F("With password: "));
-	Serial.println(sta_pwd);
+	// Serial.print(F("With password: "));
+	// Serial.println(sta_pwd);
 	// Finally, print everything out...
 	print_wifi_info();
 }
@@ -125,15 +128,17 @@ void route_addr_iam() {
 }
 
 void route_mqtt_login_mqi() {
+	String broker_addr = param::get_mqtt_address();
+	if (!server.hasArg("token")) goto bail;
+	// PRE-CHECK: If custom server is set, refuse mqi auth
+	if (broker_addr.length()) goto bail;
+	// Also clear MQTT username and password
+	param::set_mqtt_mqi_token(server.arg("token"));
 	param::set_mqtt_username("");
 	param::set_mqtt_password("");
-	if (!server.hasArg("token")) {
-		server.send(200, "application/json", "{\"status\": \"error\"}");
+	bail:
+	server.send(200, "application/json", "{\"status\": \"error\"}");
 		return;
-	}
-	String mqtt_token = server.arg("token");
-	param::set_mqtt_mqi_token(mqtt_token);
-	server.send(200, "application/json", "{\"status\": \"success\"}");
 }
 
 void route_mqtt_login() {
@@ -197,7 +202,7 @@ void route_build_ver() {
 	ver += MINOR_VER;
 	ver += ", \"build\": ";
 	ver += BUILD_VER;
-	ver += "}";
+	ver += "\"}";
 	server.send(200, "application/json", ver);
 }
 
@@ -205,7 +210,10 @@ void route_device_info() {
 	String info = "{\"type\": \"";
 	info += DEVTYPE;
 	info += "\", \"device_id\": \"";
-	info += WiFi.macAddress() + String(ESP.getFlashChipId(), HEX);
+	info += String(getRouterID(), HEX);
+	info += "\"}";
+	Serial.println(info);
+	server.send(200, "application/json", info);
 }
 
 void setup_routes() {
@@ -217,7 +225,7 @@ void setup_routes() {
 	server.on("/api/addr/iam", route_addr_iam);
 	server.on("/api/addr/broker", route_addr_broker);
 	server.on("/api/wifi/scan", route_scan_wifi);
-	server.on("/api/mqtt/login_mqi?token=", route_mqtt_login_mqi);
+	server.on("/api/mqtt/login_mqi", route_mqtt_login_mqi);
 	server.on("/api/mqtt/login", route_mqtt_login);
 	// TODO: End todo
 	server.on("/wifi/sta", route_switch_sta);

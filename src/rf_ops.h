@@ -17,8 +17,6 @@ extern RF24Mesh mesh;
 
 extern uint32_t displayTimer;
 
-extern uint8_t registry[32];
-
 extern uint8_t channel_counter;
 extern uint16_t trfc_counter;
 
@@ -31,9 +29,7 @@ struct channel_t {
 
 void radio_init(uint8_t node_id = 0);
 void radio_update();
-String generate_topic(int16_t from_node, uint8_t header_type, char *msg_type);
 void print_assigned_addresses();
-void registerChannel(uint8_t channel, uint8_t size);
-uint8_t getChannelSize(uint8_t channel);
-uint8_t isStrChannel(uint8_t channel);
 void print_radio_info();
+
+void handleCmdPkt(byte* data, byte len);

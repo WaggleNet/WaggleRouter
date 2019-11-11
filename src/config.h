@@ -33,8 +33,17 @@
 #define MINOR_VER 2
 #define BUILD_VER 4
 
+// MQI
+
+#define MQI_TOKEN_SIZE 36
+
 // Device Type
 
 #define DEVTYPE "wn-router.2.1"
 
+// Uncomment this to enable developer mode
+//#define DEV_MODE
+
+
 String getContentType(String);
+uint32_t getRouterID();

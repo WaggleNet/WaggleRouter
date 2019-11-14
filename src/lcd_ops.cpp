@@ -1,4 +1,5 @@
 #include "lcd_ops.h"
+#include "lcd_ui.h"
 
 Adafruit_PCD8544 display(LCD_PIN_DC, LCD_PIN_CE, LCD_PIN_RST);
 
@@ -8,8 +9,10 @@ void display_init() {
     display.setTextSize(1);
 	display.setTextColor(BLACK, WHITE);
 	display.setRotation(2);
+    // Print the welcome screen
+    display.drawBitmap(0, 0, UI_WELCOME, 84, 48, BLACK);
     display.display();
-    delay(500);
+    delay(1000);
     display.clearDisplay();
     display.display();
 }
@@ -35,9 +38,7 @@ void lcd_radio_info(uint8_t channels, uint8_t nodes, uint8_t traffic) {
 
 void welcome_screen() {
     display.clearDisplay();
-	display.setCursor(5,8);
-	display.println(F("PRESS BUTTON to"));
-	display.println(F("set it up."));
+	display.drawBitmap(0, 0, UI_RESET, 84, 48, BLACK);
 	display.display();
 }
 

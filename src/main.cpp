@@ -29,7 +29,8 @@ void setup() {
 	wifi_init();
     ota_init();
 	mqtt_init();
-	
+	print_wifi_info();
+	lcd.update();
 }
 
 
@@ -49,6 +50,7 @@ void loop() {
         print_mqtt_info();
 		print_radio_info();
 		mqtt_send_telemetry();
+		lcd.update();
 	}
 	mqtt_loop();
     ota_update();

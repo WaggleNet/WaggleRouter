@@ -25,6 +25,7 @@ void LCD::update() {
     } else if (lcd_page == UI_CONNECTED) {
         draw_lower_sta_ssid_ip();
     } else if (lcd_page == UI_GET_APP) {
+        Serial.println("Printing SSID");
         draw_lower_ap_ssid();
     } else if (lcd_page == UI_ERROR) {
         
@@ -49,7 +50,13 @@ void LCD::draw_background() {
 }
 
 void LCD::draw_lower_banner(String& s) {
-
+    // Clear lower region
+    display.setTextSize(1);
+    display.setTextColor(BLACK);
+    display.fillRect(0, 32, 84, 16*8, WHITE);
+    display.setCursor(0, 32);
+    display.print(s);
+    display.display();
 }
 
 void LCD::draw_lower_ap_ssid() {
@@ -63,6 +70,7 @@ void LCD::draw_lower_sta_ssid_ip() {
         ssid += '\n';
         ssid += WiFi.localIP().toString();
     }
+    draw_lower_banner(ssid);
 }
 
 void LCD::draw_num_nodes() {

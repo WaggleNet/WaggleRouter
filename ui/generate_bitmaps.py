@@ -16,6 +16,7 @@ def convert_line(all_bytes):
             buffer += 1
         counter += 1
     if counter:
+        buffer *= (2**(8-counter))
         result.append(buffer)
     return result
 
@@ -32,12 +33,18 @@ def convert_image(path):
         name, ', '.join(map(str, result))
     )
     print('Exported: %s' % name)
-    return s
+    return s, name
 
 
-fdata = ['#pragma once\n', '#include <Arduino.h>\n', '\n'];
+hdata = ['#pragma once\n', '#include <Arduino.h>\n', '\n']
+cdata = ['#include "lcd_ui.h"', '\n']
 for i in Path('.').glob('*.png'):
-    fdata.append(convert_image(i))
+    s, name = convert_image(i)
+    cdata.append(s)
+    hdata.append('extern const uint8_t {} [];\n'.format(name))
 
 with open('../src/lcd_ui.h', 'w') as fp:
-    fp.writelines(fdata)
+    fp.writelines(hdata)
+
+with open('../src/lcd_ui.cpp', 'w') as fp:
+    fp.writelines(cdata)

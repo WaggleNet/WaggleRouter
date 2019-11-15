@@ -272,6 +272,7 @@ void print_wifi_info() {
 	Serial.println(WiFi.softAPmacAddress());
 	if (WiFi.getMode() == WIFI_AP) {
 		// I'm on the welcome screen, do nothing
+		lcd.set_state(UI_GET_APP);
 	}
 	else {
 		if (WiFi.status() == WL_CONNECTED) {

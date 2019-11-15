@@ -61,6 +61,8 @@ void mqtt_loop() {
 }
 
 void mqtt_connect() {
+    // EARLY EXIT: If wifi isn't connected, just wait
+    if (WiFi.status() != WL_CONNECTED) return;
     mqtt_on = 1;
     mqclient = PubSubClient(mqtt_broker_address.c_str(), 1883, mqtt_callback, wclient);
     uint8_t conn_result;
@@ -139,7 +141,14 @@ void mqtt_send_telemetry() {
 }
 
 void print_mqtt_info() {
-    lcd_mqtt(1, mqtt_on, mqtt_broker_address);
+    // If wifi isn't connected, wait for it to finish
+    if (WiFi.status() != WL_CONNECTED) return;
+    // Then decide which part of the screen to print
+    if (mqtt_on) {
+        lcd.set_state(UI_CONNECTED);
+    } else {
+        lcd.set_state(UI_CONN_CLOUD);
+    }
 }
 
 void mqtt_callback(char* topic, byte* payload, unsigned int length) {

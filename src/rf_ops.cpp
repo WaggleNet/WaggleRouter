@@ -96,7 +96,8 @@ void radio_update() {
 }
 
 void print_radio_info() {
-    lcd_radio_info(channel_counter, mesh.addrListTop, trfc_counter);
+    lcd.num_nodes = mesh.addrListTop;
+    lcd.traffic_amount = trfc_counter;
     trfc_counter = 0;
 }
 

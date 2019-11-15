@@ -249,20 +249,15 @@ bool handleFileRead(String path) {
 
 void wifi_init() {
 	Serial.println(F("[Wifi] Configuring access point..."));
-	welcome_screen();
-	auto timeout = millis() + 2000;
-	while (millis() <= timeout) {
-		if (digitalRead(SWITCH_PIN) == LOW) {
-			param::reset_params();
-			ESP.restart();
-		}
-	}
-	display_clear();
 	String ssid = param::get_wifi_ssid();
 	// TLDR: We kick into AP mode if there's no Wifi SSID remembered
-	if (ssid.length())
+	if (ssid.length()) {
 		mode_sta_begin();
-	else mode_ap_begin();
+		lcd.set_state(UI_GET_APP);
+	} else {
+		mode_ap_begin();
+		lcd.set_state(UI_CONN_WIFI);
+	}
 	setup_routes();
 	server.begin();
 }
@@ -276,17 +271,16 @@ void print_wifi_info() {
 	Serial.println(WiFi.macAddress());
 	Serial.println(WiFi.softAPmacAddress());
 	if (WiFi.getMode() == WIFI_AP) {
-		lcd_wifi_ap(WiFi.softAPIP().toString());
-		Serial.print(F("[Wifi] SoftAP, IP: "));
-		Serial.println(WiFi.softAPIP());
+		// I'm on the welcome screen, do nothing
 	}
 	else {
-		lcd_wifi_sta(WiFi.SSID(), WiFi.localIP().toString(), WiFi.status());
 		if (WiFi.status() == WL_CONNECTED) {
 			Serial.print(F("[Wifi] Status: Connected as "));
 			Serial.println(WiFi.localIP());
+			// Connected? MQTT has authority on that screen
 		} else {
 			Serial.println(F("[Wifi] Status: Disconnected"));
+			lcd.set_state(UI_CONN_WIFI);
 			WiFi.reconnect();
 		}
 	}

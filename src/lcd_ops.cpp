@@ -24,6 +24,7 @@ void LCD::update() {
         draw_lower_sta_ssid_ip();
     } else if (lcd_page == UI_CONNECTED) {
         draw_lower_sta_ssid_ip();
+        draw_num_nodes();
     } else if (lcd_page == UI_GET_APP) {
         Serial.println("Printing SSID");
         draw_lower_ap_ssid();
@@ -53,7 +54,7 @@ void LCD::draw_lower_banner(String& s) {
     // Clear lower region
     display.setTextSize(1);
     display.setTextColor(BLACK);
-    display.fillRect(0, 32, 84, 16*8, WHITE);
+    display.fillRect(0, 32, 84, 16, WHITE);
     display.setCursor(0, 32);
     display.print(s);
     display.display();
@@ -74,7 +75,14 @@ void LCD::draw_lower_sta_ssid_ip() {
 }
 
 void LCD::draw_num_nodes() {
-    
+    // Clear that region
+    display.setTextSize(1);
+    display.setTextColor(BLACK);
+    display.fillRect(6, 16, 50, 8, WHITE);
+    display.setCursor(6, 16);
+    display.print(num_nodes);
+    display.print(F(" nodes"));
+    display.display();
 }
 
 void LCD::ota_start() {

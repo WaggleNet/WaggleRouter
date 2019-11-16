@@ -128,6 +128,7 @@ void retrieve_mqi_token() {
 
 
 void mqtt_send_telemetry() {
+    if (!mqtt_on) return;
     uint8_t buffer[15 + sizeof(mesh_status_t)] = { 0 };
     buffer[14] = 1;
     // Fill the status pkt with actual data

@@ -96,7 +96,7 @@ void radio_update() {
 }
 
 void print_radio_info() {
-    lcd.num_nodes = mesh.addrListTop;
+    lcd.num_nodes = mesh.addrBook.count();
     lcd.traffic_amount = trfc_counter;
     trfc_counter = 0;
 }
@@ -104,11 +104,13 @@ void print_radio_info() {
 void print_assigned_addresses() {
     Serial.println(" ");
     Serial.println(F("[Radio] ********Assigned Addresses********"));
-    for(int i=0; i<mesh.addrListTop; i++){
-        Serial.print(F("[Radio] NodeID: "));
-        Serial.print(mesh.addrList[i].nodeID);
-        Serial.print(F(" RF24Network Address: 0"));
-        Serial.println(mesh.addrList[i].address,OCT);
+    for(int i=0; i<mesh.addrBook.count(); i++){
+        Serial.print(F("[Radio] NodeID: 0x"));
+        Serial.print(mesh.addrBook[i].nodeID, HEX);
+        Serial.print(F(" Address: 0"));
+        Serial.println(mesh.addrBook[i].address,OCT);
     }
+    Serial.print(F("[Radio] Number of nodes: "));
+    Serial.println(mesh.addrBook.count());
     Serial.println(F("[Radio] **********************************"));
 }

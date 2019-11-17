@@ -1,77 +1,91 @@
 #include "lcd_ops.h"
 
-Adafruit_PCD8544 display(LCD_PIN_DC, LCD_PIN_CE, LCD_PIN_RST);
 
-void display_init() {
+
+LCD::LCD():display(LCD_PIN_DC, LCD_PIN_CE, LCD_PIN_RST) {
+
+}
+
+void LCD::begin() {
     display.begin();
     display.setContrast(60);
     display.setTextSize(1);
 	display.setTextColor(BLACK, WHITE);
 	display.setRotation(2);
-    display.display();
-    delay(500);
+    // Print the welcome screen
+    set_state(UI_WELCOME); update();
+}
+
+void LCD::update() {
+    if (last_lcd_page != lcd_page) draw_background();
+    if (lcd_page == UI_CONN_WIFI) {
+        draw_lower_sta_ssid_ip();
+    } else if (lcd_page == UI_CONN_CLOUD) {
+        draw_lower_sta_ssid_ip();
+    } else if (lcd_page == UI_CONNECTED) {
+        draw_lower_sta_ssid_ip();
+        draw_num_nodes();
+    } else if (lcd_page == UI_GET_APP) {
+        Serial.println("Printing SSID");
+        draw_lower_ap_ssid();
+    } else if (lcd_page == UI_ERROR) {
+        
+    }
+    last_lcd_page = lcd_page;
+}
+
+void LCD::clear() {
+    lcd_page = NULL;
+    update();
+}
+
+void LCD::set_state(uint8_t const * state) {
+    lcd_page = state;
+}
+
+void LCD::draw_background() {
     display.clearDisplay();
-    display.display();
-}
-
-void display_clear_line(uint8_t line_start, uint8_t line_end) {
-    display.setTextSize(1);
-    display.fillRect(0, line_start*8, 84, (line_end-line_start+1)*8, WHITE);
-    display.setCursor(0, line_start*8);
-}
-
-
-void lcd_radio_info(uint8_t channels, uint8_t nodes, uint8_t traffic) {
-    display_clear_line(4, 5);
-    display.setTextColor(WHITE, BLACK);
-    display.println("CH NODE TRFC  ");
-    display.setTextColor(BLACK, WHITE);
-    display.print(channels);
-    display.setCursor(18, 40);
-    display.print(nodes);
-    display.setCursor(48, 40);
-    display.print(traffic);
-}
-
-void welcome_screen() {
-    display.clearDisplay();
-	display.setCursor(5,8);
-	display.println(F("PRESS BUTTON to"));
-	display.println(F("set it up."));
+    if (!lcd_page) return;
+	display.drawBitmap(0, 0, lcd_page, 84, 48, BLACK);
 	display.display();
 }
 
-void display_clear() {
-    display.clearDisplay();
+void LCD::draw_lower_banner(String& s) {
+    // Clear lower region
+    display.setTextSize(1);
+    display.setTextColor(BLACK);
+    display.fillRect(0, 32, 84, 16, WHITE);
+    display.setCursor(0, 32);
+    display.print(s);
     display.display();
 }
 
-void lcd_wifi_base() {
-    display_clear_line(0, 1);
-	display.setTextWrap(false);
-	display.setTextColor(WHITE, BLACK);
-    display.print("WIFI>");
-    display.setTextColor(BLACK, WHITE);
+void LCD::draw_lower_ap_ssid() {
+    String ssid = WiFi.softAPSSID();
+    draw_lower_banner(ssid);
 }
 
-void lcd_wifi_ap(String ip) {
-    lcd_wifi_base();
-    display.println(F("AP Mode"));
-    display.println(ip);
-    display.display();
-}
-
-void lcd_wifi_sta(String ssid, String ip, wl_status_t status) {
-    display.println(ssid);
-    if (status == WL_CONNECTED) {
-        display.println(ip);
-    } else {
-        display.println(F("!Disconnected!"));
+void LCD::draw_lower_sta_ssid_ip() {
+    String ssid = WiFi.SSID();
+    if (WiFi.status() == WL_CONNECTED) {
+        ssid += '\n';
+        ssid += WiFi.localIP().toString();
     }
+    draw_lower_banner(ssid);
+}
+
+void LCD::draw_num_nodes() {
+    // Clear that region
+    display.setTextSize(1);
+    display.setTextColor(BLACK);
+    display.fillRect(6, 16, 50, 8, WHITE);
+    display.setCursor(6, 16);
+    display.print(num_nodes);
+    display.print(F(" nodes"));
     display.display();
 }
 
-void lcd_ota_start() {
+void LCD::ota_start() {
     display.clearDisplay();
     display.setCursor(0, 0);
     display.setTextColor(WHITE, BLACK);
@@ -80,13 +94,13 @@ void lcd_ota_start() {
     display.display();
 }
 
-void lcd_ota_complete() {
-    display_clear_line(3, 4);
+void LCD::ota_complete() {
+    clear_line(3, 4);
     display.println("Complete!");
     display.display();
 }
 
-void lcd_ota_progress(unsigned int progress, unsigned int total) {
+void LCD::ota_progress(unsigned int progress, unsigned int total) {
     display.println("Progress:");
     display.print(progress);
     display.print('/');
@@ -94,8 +108,8 @@ void lcd_ota_progress(unsigned int progress, unsigned int total) {
     display.display();
 }
 
-void lcd_ota_error(int error) {
-    display_clear_line(3, 4);
+void LCD::ota_error(int error) {
+    clear_line(3, 4);
     display.print("ERROR ");
     display.println(error);
     if (error == 0) display.println("Auth Failed");
@@ -106,15 +120,10 @@ void lcd_ota_error(int error) {
     display.display();
 }
 
-void lcd_mqtt(bool mqtt_broker_enable, bool mqtt_on, String mqtt_broker_address) {
-    display_clear_line(2, 3);
-    display.setTextWrap(false);
-    display.setTextColor(WHITE, BLACK);
-    display.print("MQTT>");
-    display.setTextColor(BLACK, WHITE);
-    if (mqtt_broker_enable) {
-        display.print("On,");
-        display.println(mqtt_on ? "OK" : "Wait");
-        display.println(mqtt_broker_address);
-    } else display.println("Off");
+void LCD::clear_line(uint8_t line_start, uint8_t line_end) {
+    display.setTextSize(1);
+    display.fillRect(0, line_start*8, 84, (line_end-line_start+1)*8, WHITE);
+    display.setCursor(0, line_start*8);
 }
+
+LCD lcd;

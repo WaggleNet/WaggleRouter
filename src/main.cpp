@@ -13,12 +13,24 @@ void setup() {
 	Serial.println();
     EEPROM.begin(128);
     SPIFFS.begin();
-    display_init();
+    lcd.begin();
+	// Print the reset prompt
+	delay(1000);
+	lcd.set_state(UI_RESET);
+	lcd.update();
+	auto timeout = millis() + 2000;
+	while (millis() <= timeout) {
+		if (digitalRead(SWITCH_PIN) == LOW) {
+			param::reset_params();
+			ESP.restart();
+		}
+	}
 	radio_init();
 	wifi_init();
     ota_init();
 	mqtt_init();
-    print_mqtt_info();
+	print_wifi_info();
+	lcd.update();
 }
 
 
@@ -38,6 +50,7 @@ void loop() {
         print_mqtt_info();
 		print_radio_info();
 		mqtt_send_telemetry();
+		lcd.update();
 	}
 	mqtt_loop();
     ota_update();

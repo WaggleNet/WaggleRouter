@@ -4,19 +4,19 @@
 
 void ota_init() {
     ArduinoOTA.onStart([]() {
-        lcd_ota_start();
+        lcd.ota_start();
     });
     ArduinoOTA.onEnd([]() {
-        lcd_ota_complete();
+        lcd.ota_complete();
         delay(1000);
         ESP.reset();
     });
     ArduinoOTA.onProgress([](unsigned int progress, unsigned int total) {
-        display_clear_line(1, 2);
-        lcd_ota_progress(progress, total);
+        lcd.clear_line(1, 2);
+        lcd.ota_progress(progress, total);
     });
     ArduinoOTA.onError([](ota_error_t error) {
-        lcd_ota_error(error);
+        lcd.ota_error(error);
         delay(2000);
         ESP.reset();
     });

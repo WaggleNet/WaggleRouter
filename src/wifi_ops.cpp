@@ -128,6 +128,9 @@ void route_addr_iam() {
 }
 
 void route_mqtt_login_mqi() {
+	#ifdef DEBUG
+	server.sendHeader("Access-Controll-Allow-Origin", "*");
+	#endif
 	String broker_addr = param::get_mqtt_address();
 	if (!server.hasArg("token")) goto bail;
 	// PRE-CHECK: If custom server is set, refuse mqi auth
@@ -136,6 +139,7 @@ void route_mqtt_login_mqi() {
 	param::set_mqtt_mqi_token(server.arg("token"));
 	param::set_mqtt_username("");
 	param::set_mqtt_password("");
+	server.send(200, "application/json", "{\"status\": \"success\"}");
 	bail:
 	server.send(200, "application/json", "{\"status\": \"error\"}");
 		return;
@@ -171,6 +175,9 @@ void route_switch_sta() {
 }
 
 void route_switch_ap() {
+	#ifdef DEBUG
+	server.sendHeader("Access-Controll-Allow-Origin", "*");
+	#endif
 	param::set_wifi_ssid("");
 	if (server.hasArg("browser")) {
 		server.sendHeader("Location", String("/"), true);

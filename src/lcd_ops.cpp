@@ -11,7 +11,7 @@ void LCD::begin() {
     display.setContrast(60);
     display.setTextSize(1);
 	display.setTextColor(BLACK, WHITE);
-	display.setRotation(2);
+	display.setRotation(0);
     // Print the welcome screen
     set_state(UI_WELCOME); update();
 }

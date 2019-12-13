@@ -9,12 +9,15 @@ RF24Mesh mesh(radio,network);
 uint8_t channel_counter = 0;
 uint16_t trfc_counter = 0;
 
-void radio_init(uint8_t node_id) {
+bool radio_init(uint8_t node_id) {
     radio.setPALevel(RF24_PA_MAX);
     mesh.setNodeID(node_id);
     Serial.println(F("[Radio] Configuring mesh network..."));
-	mesh.begin(RF_CHANNEL, RF24_2MBPS);
-    Serial.println(F("[Radio] Mesh network configuration complete"));
+	bool result = mesh.begin(RF_CHANNEL, RF24_2MBPS);
+    if (result)
+        Serial.println(F("[Radio] Mesh network configuration complete"));
+    else Serial.println(F("[Radio] FATAL: Radio init failed"));
+    return result;
 }
 
 

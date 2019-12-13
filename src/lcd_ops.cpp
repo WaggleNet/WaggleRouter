@@ -26,10 +26,9 @@ void LCD::update() {
         draw_lower_sta_ssid_ip();
         draw_num_nodes();
     } else if (lcd_page == UI_GET_APP) {
-        Serial.println("Printing SSID");
         draw_lower_ap_ssid();
     } else if (lcd_page == UI_ERROR) {
-        
+        draw_lower_banner(error);
     }
     last_lcd_page = lcd_page;
 }

@@ -25,7 +25,13 @@ void setup() {
 			ESP.restart();
 		}
 	}
-	radio_init();
+	bool radio_result = radio_init();
+	if (!radio_result) {
+		lcd.error = "RADIO FAILURE\nNEED REPLACE";
+		lcd.set_state(UI_ERROR);
+		lcd.update();
+		while (1) ESP.wdtFeed();  // Get stuck
+	}
 	wifi_init();
     ota_init();
 	mqtt_init();

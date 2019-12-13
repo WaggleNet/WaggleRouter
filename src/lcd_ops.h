@@ -19,6 +19,7 @@ class LCD {
     // Incoming display states
     int num_nodes = 1;
     int traffic_amount = 1;
+    String error;
 
     // OTA only
     void ota_start();

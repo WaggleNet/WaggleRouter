@@ -27,7 +27,7 @@ struct channel_t {
     uint16_t size;
 };
 
-void radio_init(uint8_t node_id = 0);
+bool radio_init(uint8_t node_id = 0);
 void radio_update();
 void print_assigned_addresses();
 void print_radio_info();

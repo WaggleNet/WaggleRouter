@@ -30,8 +30,8 @@
 // Versioning
 
 #define MAJOR_VER 1
-#define MINOR_VER 2
-#define BUILD_VER 4
+#define MINOR_VER 3
+#define BUILD_VER 5
 
 // MQI
 
@@ -39,7 +39,8 @@
 
 // Device Type
 
-#define DEVTYPE "wn-router.2.1"
+#define DEVTYPE "wn-router.1.3"
+#define TELEMETRY_TYPE 102
 
 // Uncomment this to enable developer mode
 //#define DEV_MODE

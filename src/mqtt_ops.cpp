@@ -42,8 +42,7 @@ void mqtt_init() {
     // We no longer fill the mac address onto the mesh status packet
     // Prefill the invariant info on the pkt.
     // for (int8_t i = 5; i >= 0; i--) {
-    //     mesh_status_pkt.mac[i] = mac & 0xff;
-    //     mac >>= 8;
+    //     mesh_status_pkt.mac[i] = mac & 0xff;6    //     mac >>= 8;
     // }
 }
 
@@ -129,16 +128,32 @@ void retrieve_mqi_token() {
 
 void mqtt_send_telemetry() {
     if (!mqtt_on) return;
-    uint8_t buffer[15 + sizeof(mesh_status_t)] = { 0 };
-    buffer[14] = 1;
+    // Size = header 15 + nodes(uint16) 4 + trfc 4 + rssi(int32) 6 = 29
+    const size_t bufsize = 29;
+    uint8_t buffer[bufsize] = { 0 };
+    // Fill the header of the packet (router ID)
+    uint32_t routerID = getRouterID();
+    uint32_t sensorTypeID = TELEMETRY_TYPE;
+    memcpy(buffer, &routerID, sizeof(routerID));
+    memcpy(buffer+9, &sensorTypeID, sizeof(sensorTypeID));
+    buffer[14] = 3;
     // Fill the status pkt with actual data
-    mesh_status_pkt.node_counter = mesh.addrListTop;
-    mesh_status_pkt.trfc_counter = trfc_counter;
-    mesh_status_pkt.rssi = WiFi.RSSI();
-    // Save this to the buffer
-    memcpy(buffer+15, &mesh_status_pkt, sizeof(mesh_status_t));
+    buffer[15] = 0;  // Entry 0: Num of Nodes
+    buffer[16] = 2;  //          type uint16
+    uint16_t numNodes = mesh.addrListTop;
+    memcpy(buffer+17, &numNodes, sizeof(numNodes));
+    
+    buffer[19] = 1;  // Entry 1: Num of Nodes
+    buffer[20] = 2;  //          type uint16
+    memcpy(buffer+21, &trfc_counter, sizeof(trfc_counter));
+    
+    buffer[15] = 23;  // Entry 2: Num of Nodes
+    buffer[16] = 24;  //          type uint16
+    int32_t rssi = WiFi.RSSI();
+    memcpy(buffer+25, &rssi, sizeof(rssi));
+
     // Publish
-    mqclient.publish(generate_topic("telemtry").c_str(), buffer, sizeof(buffer));
+    mqclient.publish(generate_topic("telemtry").c_str(), buffer, bufsize);
 }
 
 void print_mqtt_info() {

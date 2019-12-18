@@ -55,7 +55,10 @@ void mqtt_loop() {
     if (mqtt_on && !mqclient.connected()) mqtt_on = 0;
     // If unconnected, every five seconds we reconnect
     if (((long)millis() - mqtt_timer) > 5000) {
-        if (!mqtt_on) mqtt_connect();
+        if (!mqtt_on) {
+            mqtt_connect();
+            mqtt_timer = millis();
+        }
     }
 }
 
@@ -103,8 +106,7 @@ void mqtt_connect() {
 void retrieve_mqi_token() {
     HTTPClient http;
     String mqtt_token = param::get_mqtt_mqi_token();
-    Serial.print("Requesting MQI access code for token");
-	Serial.println(mqtt_token);
+    Serial.print(F("Requesting MQI access code for token"));
 	String iam_endpoint = param::get_iam_address() + "/mqi/redeem/device?device_id=";
 	iam_endpoint += esp_chip_id;
 	iam_endpoint += "&token=";
@@ -114,15 +116,16 @@ void retrieve_mqi_token() {
 		if (http_code == HTTP_CODE_OK) {
 			String response = http.getString();
 			decrypt_mqi_store(response);
-			// param::set_mqtt_mqi_token(http.getString());
 			http.end();
-			Serial.print("[HTTP] Successfully obtained MQI Token ");
-			Serial.println(param::get_mqtt_mqi_token());
-			server.send(200, "application/json", "{\"status\": \"success\"}");
 			mqtt_init();
-		}
+		} else {
+            Serial.print(F("Failed to retrieve token: "));
+            Serial.println(http_code);
+        }
 		http.end();
-	}
+	} else {
+        Serial.println(F("Failed to begin HTTP"));
+    }
 }
 
 
@@ -153,7 +156,7 @@ void mqtt_send_telemetry() {
     memcpy(buffer+25, &rssi, sizeof(rssi));
 
     // Publish
-    mqclient.publish(generate_topic("telemtry").c_str(), buffer, bufsize);
+    mqclient.publish(generate_topic("telemetry").c_str(), buffer, bufsize);
 }
 
 void print_mqtt_info() {

@@ -128,13 +128,11 @@ void route_addr_iam() {
 }
 
 void route_mqtt_login_mqi() {
-	#ifdef DEBUG
-	server.sendHeader("Access-Controll-Allow-Origin", "*");
-	#endif
+	server.sendHeader("Access-Control-Allow-Origin", "*");
 	String broker_addr = param::get_mqtt_address();
 	if (!server.hasArg("token")) goto bail;
 	// PRE-CHECK: If custom server is set, refuse mqi auth
-	if (broker_addr.length()) goto bail;
+	if (broker_addr.length() <= 2) goto bail;
 	// Also clear MQTT username and password
 	param::set_mqtt_mqi_token(server.arg("token"));
 	param::set_mqtt_username("");
@@ -160,6 +158,7 @@ void route_mqtt_login() {
 }
 
 void route_switch_sta() {
+	server.sendHeader("Access-Control-Allow-Origin", "*");
 	if (server.hasArg("ssid") && server.hasArg("password")) {
 		Serial.print(F("Setting ssid to "));
 		Serial.println(server.arg("ssid"));
@@ -171,13 +170,12 @@ void route_switch_sta() {
 		server.send(302, "text/plain", "");
 	} else
 		server.send(200, "application/json", "{\"status\": \"success\"}");
+	delay(500);
 	ESP.restart();
 }
 
 void route_switch_ap() {
-	#ifdef DEBUG
-	server.sendHeader("Access-Controll-Allow-Origin", "*");
-	#endif
+	server.sendHeader("Access-Control-Allow-Origin", "*");
 	param::set_wifi_ssid("");
 	if (server.hasArg("browser")) {
 		server.sendHeader("Location", String("/"), true);
@@ -188,6 +186,7 @@ void route_switch_ap() {
 }
 
 void route_scan_wifi() {
+	server.sendHeader("Access-Control-Allow-Origin", "*");
 	int count = WiFi.scanNetworks();
 	String result = "{\"networks\": [";
 	for (int i = 0; i < count; i++) {
@@ -203,6 +202,7 @@ void route_scan_wifi() {
 }
 
 void route_build_ver() {
+	server.sendHeader("Access-Control-Allow-Origin", "*");
 	String ver = "{\"major\": ";
 	ver += MAJOR_VER;
 	ver += ", \"minor\": ";
@@ -214,6 +214,7 @@ void route_build_ver() {
 }
 
 void route_device_info() {
+	server.sendHeader("Access-Control-Allow-Origin", "*");
 	String info = "{\"type\": \"";
 	info += DEVTYPE;
 	info += "\", \"device_id\": \"";

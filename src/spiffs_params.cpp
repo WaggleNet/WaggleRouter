@@ -1,4 +1,5 @@
 #include "spiffs_params.h"
+#include "config.h"
 #include <Base64.h>
 
 namespace fs {
@@ -31,11 +32,16 @@ namespace param {
     }
 
     String get_mqtt_address() {
-        return fs::read_str("/conf/broker_addr");
+        auto result = fs::read_str("/conf/broker_addr");
+        // <= 2 because there might be a linebreak
+        if (result.length() <= 2) return default_broker_addr;
+        return result;
     }
     
     String get_iam_address() {
-        return fs::read_str("/conf/iam_addr");
+        auto result = fs::read_str("/conf/iam_addr");
+        if (result.length() <= 2) return default_iam_addr;
+        return result;
     }
 
     String get_mqtt_username() {
@@ -127,8 +133,8 @@ namespace param {
     }
 
     void reset_params() {
-        set_mqtt_address("broker.wagglenet.org");
-        set_iam_address("iam.wagglenet.org");
+        set_mqtt_address("");
+        set_iam_address("");
         set_mqtt_username("");
         set_mqtt_password("");
         set_wifi_password("");

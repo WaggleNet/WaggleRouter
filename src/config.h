@@ -45,6 +45,8 @@
 // Uncomment this to enable developer mode
 //#define DEV_MODE
 
+extern const char default_iam_addr[];
+extern const char default_broker_addr[];
 
 String getContentType(String);
 uint32_t getRouterID();

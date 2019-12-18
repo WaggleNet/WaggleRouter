@@ -19,3 +19,6 @@ String getContentType(String filename){
 uint32_t getRouterID() {
   return ESP.getChipId() + ESP.getFlashChipId();
 }
+
+const char default_iam_addr[] = "http://i.wagglenet.org";
+const char default_broker_addr[] = "mqtt.wagglenet.org";
